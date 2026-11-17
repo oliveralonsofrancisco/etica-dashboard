@@ -198,6 +198,35 @@ details[open] summary::after{content:"Ocultar"}
 .pgn{position:absolute;right:8px;bottom:6px;font:500 .68rem var(--f-mono);color:#6b6b6b}
 #pane-src{overflow:auto;background:var(--bg)}
 #drawer.wide{width:min(920px,100%)}
+/* panel acoplado: en pantallas de portátil empuja el contenido en vez de taparlo */
+@media (min-width:901px){
+  #drawer{width:clamp(360px,34vw,440px)}
+  #drawer.wide{width:clamp(420px,48vw,920px)}
+  .shell{transition:padding-right .25s}
+  body.dr-open .shell{padding-right:var(--drw,0px)}
+  body.dr-open main{padding-inline:clamp(16px,2.4vw,40px)}
+}
+@media (min-width:901px) and (max-width:1499px){
+  body.dr-wide .rail{display:none}
+  body.dr-wide .shell{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion: reduce){.shell{transition:none}}
+.dr-body[hidden],.more[hidden]{display:none}
+/* el contenido se adapta al ancho real que le queda, no al de la pantalla */
+main{container-type:inline-size;container-name:main}
+main h1{font-size:clamp(2.2rem,6.5cqi,4.4rem)}
+@container main (max-width:880px){
+  .qwords,.authors,.qwords.q4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .grid2,.grid2.eq{grid-template-columns:minmax(0,1fr)}
+  .margin{position:static;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .saberes{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .steps{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .hero{grid-template-columns:minmax(0,1fr);gap:24px}
+}
+@container main (max-width:640px){
+  .ideas,.context,.myths,.saberes.c3,.pas,.qwords.pq3,.steps.s4{grid-template-columns:minmax(0,1fr)}
+  .col,.tview{gap:56px}
+}
 
 /* ---------- selection toolbar ---------- */
 #hl-bar{position:fixed;z-index:50;display:flex;gap:4px;background:var(--ink);color:var(--bg);border-radius:12px;padding:5px;box-shadow:var(--shadow);font-family:var(--f-ui);transform:translateX(-50%)}
@@ -6066,11 +6095,13 @@ Page 2</script>
 
   /* ---------- panel ---------- */
   var drawer=$('#drawer'),current=null;
+  function dock(){var on=drawer.classList.contains('open');document.body.classList.toggle('dr-open',on);document.body.classList.toggle('dr-wide',on&&drawer.classList.contains('wide'));document.documentElement.style.setProperty('--drw',on?drawer.getBoundingClientRect().width+'px':'0px')}
+  addEventListener('resize',dock);
   function openDrawer(tab){drawer.classList.add('open');drawer.setAttribute('aria-hidden','false');showTab(tab||'exp')}
-  function closeDrawer(){document.querySelectorAll('.src-on').forEach(function(e){e.classList.remove('src-on')});drawer.classList.remove('open');drawer.setAttribute('aria-hidden','true');document.querySelectorAll('mark.hl.active').forEach(function(m){m.classList.remove('active')})}
+  function closeDrawer(){document.querySelectorAll('.src-on').forEach(function(e){e.classList.remove('src-on')});drawer.classList.remove('open');drawer.setAttribute('aria-hidden','true');dock();document.querySelectorAll('mark.hl.active').forEach(function(m){m.classList.remove('active')})}
   function showTab(t){
     ['exp','src','list'].forEach(function(k){$('#tab-'+k).setAttribute('aria-selected',t===k);$('#pane-'+k).hidden=t!==k});
-    drawer.classList.toggle('wide',t==='src');if(t==='src')renderPages();
+    drawer.classList.toggle('wide',t==='src');dock();if(t==='src')renderPages();
     $('#more-form').hidden=!(t==='exp'&&current&&current.thread.length);
     if(t==='list')renderList();
   }
@@ -6393,7 +6424,7 @@ Page 2</script>
   function openSrc(el,title,phrases){
     document.querySelectorAll('.src-on').forEach(function(e){e.classList.remove('src-on')});
     el.classList.add('src-on');
-    openDrawer('src');
+    openDrawer('src');if(innerWidth>900)setTimeout(function(){el.scrollIntoView({block:'center'})},300);
     var st=el.closest('[data-srct]');srcT=st?+st.dataset.srct:temaOf(el);srcN=paintRects(phrases,srcT);
     $('#src-head').innerHTML='<span class="sel-meta">De dónde sale esta idea · apuntes de '+TN(srcT)+'</span><b>'+esc(title)+'</b><div class="src-nav">'+(srcN>1?'<button class="icon-btn" type="button" id="src-prev">Anterior</button><button class="icon-btn" type="button" id="src-next">Siguiente</button><span id="src-count"></span>':'<span>Subrayado en amarillo</span>')+'<button class="icon-btn" type="button" id="src-zoom" style="margin-left:auto">Ampliar</button></div>';
     if(srcN>1){$('#src-prev').addEventListener('click',function(){goSrc(srcCur-1)});$('#src-next').addEventListener('click',function(){goSrc(srcCur+1)})}
