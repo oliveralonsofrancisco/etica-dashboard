@@ -212,6 +212,15 @@ details[open] summary::after{content:"Ocultar"}
 }
 @media (prefers-reduced-motion: reduce){.shell{transition:none}}
 .dr-body[hidden],.more[hidden]{display:none}
+#dr-grip{display:none}
+@media (min-width:901px){
+  #dr-grip{display:flex;position:absolute;left:-9px;top:0;bottom:0;width:18px;z-index:3;cursor:col-resize;align-items:center;justify-content:center;touch-action:none;outline:none}
+  #dr-grip::before{content:"";width:6px;height:64px;border-radius:4px;background:var(--muted);border:1px solid var(--surface);transition:background .15s,height .15s}
+  #dr-grip:hover::before,#dr-grip:focus-visible::before,body.dr-resizing #dr-grip::before{background:var(--accent);height:96px}
+  body.dr-resizing{cursor:col-resize;user-select:none;-webkit-user-select:none}
+  body.dr-resizing .shell,body.dr-resizing #drawer{transition:none}
+  body.dr-resizing #drawer iframe,body.dr-resizing .notes{pointer-events:none}
+}
 /* el contenido se adapta al ancho real que le queda, no al de la pantalla */
 main{container-type:inline-size;container-name:main}
 main h1{font-size:clamp(2.2rem,6.5cqi,4.4rem)}
@@ -2536,6 +2545,7 @@ details.mq[open]>summary .mq-prev{display:none}
 
 <!-- Explicador -->
 <aside id="drawer" class="no-hl" aria-label="Explicador" aria-hidden="true">
+  <div id="dr-grip" role="separator" aria-orientation="vertical" aria-label="Cambiar el ancho del panel" tabindex="0" title="Arrastra para cambiar el ancho · doble clic para ampliar o reducir"></div>
   <div class="dr-head"><b>Explicador</b><button class="icon-btn" type="button" id="dr-close">Cerrar</button></div>
   <div class="dr-tabs" role="tablist">
     <button type="button" role="tab" id="tab-exp" aria-selected="true">Explicación</button>
@@ -6095,7 +6105,19 @@ Page 2</script>
 
   /* ---------- panel ---------- */
   var drawer=$('#drawer'),current=null;
-  function dock(){var on=drawer.classList.contains('open');document.body.classList.toggle('dr-open',on);document.body.classList.toggle('dr-wide',on&&drawer.classList.contains('wide'));document.documentElement.style.setProperty('--drw',on?drawer.getBoundingClientRect().width+'px':'0px')}
+  var drW=load('etica-drw',{});
+  function wKey(){return drawer.classList.contains('wide')?'w':'n'}
+  function clampW(v){return Math.round(Math.max(320,Math.min(v,innerWidth-320)))}
+  function applyW(){var v=drW[wKey()];drawer.style.width=(v&&innerWidth>900)?clampW(v)+'px':''}
+  function setW(v,save){v=clampW(v);drawer.style.width=v+'px';document.documentElement.style.setProperty('--drw',v+'px');grip.setAttribute('aria-valuenow',v);if(save){drW[wKey()]=v;store('etica-drw',drW)}}
+  var grip=$('#dr-grip'),dragX=null;
+  grip.addEventListener('pointerdown',function(e){if(e.button)return;e.preventDefault();dragX=true;grip.setPointerCapture(e.pointerId);document.body.classList.add('dr-resizing')});
+  grip.addEventListener('pointermove',function(e){if(dragX)setW(innerWidth-e.clientX,false)});
+  function endDrag(){if(!dragX)return;dragX=null;document.body.classList.remove('dr-resizing');setW(drawer.getBoundingClientRect().width,true)}
+  grip.addEventListener('pointerup',endDrag);grip.addEventListener('pointercancel',endDrag);
+  grip.addEventListener('dblclick',function(){var w=drawer.getBoundingClientRect().width,mid=innerWidth/2;setW(w>mid?320:innerWidth-320,true)});
+  grip.addEventListener('keydown',function(e){var w=drawer.getBoundingClientRect().width;if(e.key==='ArrowLeft'){e.preventDefault();setW(w+48,true)}else if(e.key==='ArrowRight'){e.preventDefault();setW(w-48,true)}});
+  function dock(){var on=drawer.classList.contains('open');applyW();document.body.classList.toggle('dr-open',on);document.body.classList.toggle('dr-wide',on&&drawer.classList.contains('wide'));document.documentElement.style.setProperty('--drw',on?drawer.getBoundingClientRect().width+'px':'0px')}
   addEventListener('resize',dock);
   function openDrawer(tab){drawer.classList.add('open');drawer.setAttribute('aria-hidden','false');showTab(tab||'exp')}
   function closeDrawer(){document.querySelectorAll('.src-on').forEach(function(e){e.classList.remove('src-on')});drawer.classList.remove('open');drawer.setAttribute('aria-hidden','true');dock();document.querySelectorAll('mark.hl.active').forEach(function(m){m.classList.remove('active')})}
