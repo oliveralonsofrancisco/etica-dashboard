@@ -303,6 +303,28 @@ details.ampliada summary{cursor:pointer;font:600 .9rem var(--f-ui);color:var(--a
 .pq-pos .idea{border-style:dashed}
 
 /* ---------- responsive ---------- */
+
+.mq-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:28px 0 8px}
+.mq-tools input{flex:1;min-width:200px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:10px 12px;font:400 .95rem var(--f-ui)}
+.mq-store{font:500 .74rem/1.5 var(--f-mono);letter-spacing:.04em;color:var(--muted);margin:0 0 6px}
+.mq-store.ok{color:var(--accent)}
+.mq-group{margin-top:34px}
+.mq-group>h2{font:600 1.15rem/1.3 var(--f-ui);margin:0 0 12px;display:flex;gap:10px;align-items:baseline}
+.mq-group>h2 small{font:500 .74rem var(--f-mono);color:var(--muted)}
+.mq-list{display:flex;flex-direction:column;gap:12px}
+details.mq{border:1px solid var(--line);border-radius:14px;background:var(--bg);overflow:hidden}
+details.mq>summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:14px 16px}
+details.mq>summary .mq-l{display:flex;flex-direction:column;gap:6px;min-width:0}
+details.mq>summary b{font:500 1.02rem/1.45 var(--f-read);overflow-wrap:anywhere}
+details.mq>summary .sel-meta{font-weight:400}
+details.mq>summary .mq-prev{font:400 .88rem/1.5 var(--f-ui);color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+details.mq[open]>summary .mq-prev{display:none}
+.mq-body{padding:0 16px 16px;display:flex;flex-direction:column;gap:12px;border-top:1px dashed var(--line);padding-top:14px}
+.mq-acts{display:flex;flex-wrap:wrap;gap:8px}
+.mq-acts button{border:1px solid var(--line);background:none;color:var(--ink);border-radius:999px;padding:6px 12px;font:600 .8rem var(--f-ui);cursor:pointer}
+.mq-acts button:hover{border-color:var(--accent);color:var(--accent)}
+.mq-acts button.x{color:var(--muted)}
+.mq-empty{border:1px dashed var(--line);border-radius:14px;padding:26px;color:var(--muted);font:400 .98rem/1.6 var(--f-ui);margin-top:28px}
 @media (max-width:1180px){.qwords,.authors{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))} .grid2{grid-template-columns:minmax(0,1fr)} .margin{position:static;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))} .saberes{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))} .steps{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}}
 @media (max-width:900px){
   .shell{grid-template-columns:minmax(0,1fr)}
@@ -381,6 +403,9 @@ details.ampliada summary{cursor:pointer;font:600 .9rem var(--f-ui);color:var(--a
           <li><a href="#t3s7" data-nav="t3s7"><span class="tick">✓</span>3.3 Liberación de sí mismo</a></li>
           <li><a href="#t3s8" data-nav="t3s8"><span class="tick">✓</span>Para el examen</a></li>
         </ul>
+      </li>
+      <li>
+        <button type="button" class="tema" data-tema="5" aria-pressed="false">Mis preguntas<span class="pq-new" id="mq-n">0</span> <small>Explicador</small></button>
       </li>
       <li><div class="tema soon">Ferrero <small>pronto</small></div></li>
     </ul>
@@ -858,6 +883,22 @@ details.ampliada summary{cursor:pointer;font:600 .9rem var(--f-ui);color:var(--a
 
       <p class="source">Preguntas dictadas por el profesor en clase (16-11-2026) y repetidas al delegado de clase (★). Las preguntas 8 a 12 son una previsión propia, no del profesor. Las respuestas están hechas con los apuntes de J. M. Torralba (Temas 2 y 3); los ejemplos, trucos y avisos son consejos de estudio, no texto de los apuntes.</p>
       </div>
+<div class="tview no-hl" data-t="5" hidden>
+      <header class="hero">
+        <div class="hero-main">
+          <span class="label">Tu archivo de dudas</span>
+          <h1>Mis preguntas</h1>
+          <p class="thesis">Todo lo que has subrayado o preguntado al explicador, con su respuesta, ordenado por tema. Se queda guardado aunque el dashboard se actualice.</p>
+        </div>
+        <div class="how" aria-label="Cómo funciona">
+          <span class="label">Cómo funciona</span>
+          <p>Selecciona texto en cualquier tema y pulsa <b>Explícamelo</b>, o escribe una palabra en el explicador. Aparece aquí al momento.</p>
+          <p><b>Ver en el texto</b> te lleva al subrayado; <b>Seguir preguntando</b> abre el hilo para añadir más.</p>
+        </div>
+      </header>
+      <div class="mq-tools"><input id="mq-q" type="search" placeholder="Buscar en tus preguntas y respuestas…" autocomplete="off"><p class="mq-store" id="mq-store" style="flex-basis:100%">Comprobando dónde se guardan…</p></div>
+      <div id="mq-body"></div>
+</div>
       <div class="tview" data-t="1">
       <header class="hero">
         <div class="hero-main">
@@ -4177,9 +4218,74 @@ Yepes, R. - Aranguren, J., Fundamentos de Antropología, Eunsa, Pamplona, 2003.<
   function secOf(node){var tn=temaOf(node),t=tn==4?'Preguntas del profe':'Tema '+tn,el=node.nodeType===1?node:node.parentElement;var s=el&&el.closest('section,header');if(!s)return t;var h=s.querySelector('h2,h1');return h?t+' · '+h.textContent.trim():t}
 
   var items=load('etica-subrayados-v1',[]);
-  function save(){store('etica-subrayados-v1',items);var n=items.length;$('#count-hl').textContent=n;$('#count-hl2').textContent=n}
+  function save(it){store('etica-subrayados-v1',items);var n=items.length;$('#count-hl').textContent=n;$('#count-hl2').textContent=n;if(it)dbPut(it);renderMQ()}
   items.forEach(function(it){if(it.kind==='hl')restore(it)});
   save();
+
+
+  /* ---------- mis preguntas: guardado en la cuenta + apartado ---------- */
+  var dbCol=null,dbQ={},mqMode='wait';
+  function dbChain(id,fn){dbQ[id]=(dbQ[id]||Promise.resolve()).then(fn).catch(function(e){if(e&&(e.code==='revoked'||e.code==='invalid_argument')){dbCol=null;mqMode='local';paintStore()}})}
+  function dbPut(it){if(!dbCol)return;var body=JSON.parse(JSON.stringify(it));dbChain(it.id,function(){return dbCol.doc(body.id).set(body)})}
+  function dbDel(id){if(!dbCol)return;dbChain(id,function(){return dbCol.doc(id).delete()})}
+  function paintStore(){var s=$('#mq-store');if(!s)return;
+    s.className='mq-store'+(mqMode==='db'?' ok':'');
+    s.textContent=mqMode==='db'?'✓ Guardadas en tu cuenta de claude.ai: no se pierden al actualizar el dashboard y las ves en cualquier dispositivo.':mqMode==='wait'?'Comprobando dónde se guardan…':'Guardadas solo en este navegador. Ábrelo desde claude.ai para que se guarden en tu cuenta.'}
+  var GROUPS=[[4,'Preguntas del profe'],[1,'Tema 1 · Universidad'],[2,'Tema 2 · La ética'],[3,'Tema 3 · La libertad']];
+  function fdate(ts){try{return new Date(ts).toLocaleDateString('es-ES',{day:'numeric',month:'short'})}catch(e){return''}}
+  var mqOpen={};
+  function renderMQ(){
+    var B=$('#mq-body');if(!B||!GROUPS)return;
+    $('#mq-n').textContent=items.length;
+    var q=($('#mq-q').value||'').toLowerCase().trim();
+    if(!items.length){B.innerHTML='<div class="mq-empty">Aún no hay nada aquí. Selecciona una palabra o frase en cualquier tema y pulsa <b>Explícamelo</b>: la pregunta y la respuesta se guardan en este apartado.</div>';return}
+    var h='',shown=0;
+    GROUPS.forEach(function(g){
+      var L=items.filter(function(it){return (it.t||1)===g[0]&&(!q||(it.label+' '+it.thread.map(function(t){return t.content}).join(' ')).toLowerCase().indexOf(q)>=0)});
+      if(!L.length)return;shown+=L.length;
+      h+='<section class="mq-group"><h2>'+esc(g[1])+' <small>'+L.length+'</small></h2><div class="mq-list">';
+      L.forEach(function(it){
+        var ans=it.thread.filter(function(t){return t.role==='assistant'});
+        var prev=ans.length?ans[0].content.replace(/\*\*/g,'').replace(/\s+/g,' ').slice(0,220):'Sin explicar todavía.';
+        var meta=(it.kind==='hl'?it.sec.replace(/^(Tema \d|Preguntas del profe) · /,''):'Consulta escrita')+' · '+fdate(it.ts)+(function(){var n=1+it.thread.filter(function(t){return t.role==='user'}).length;return n>1?' · '+n+' preguntas':''})();
+        h+='<details class="mq" data-id="'+esc(it.id)+'"'+(mqOpen[it.id]?' open':'')+'><summary><span class="mq-l"><span class="sel-meta">'+esc(meta)+'</span><b>'+esc(it.label)+'</b><span class="mq-prev">'+esc(prev)+'</span></span></summary><div class="mq-body">';
+        it.thread.forEach(function(t,i){if(i===0&&t.role==='assistant'){h+='<div class="answer">'+md(t.content)+'</div>';return}h+=t.role==='user'?'<div class="you">'+esc(t.content)+'</div>':'<div class="answer">'+md(t.content)+'</div>'});
+        h+='<div class="mq-acts">'+(it.kind==='hl'?'<button type="button" data-act="go">Ver en el texto</button>':'')+'<button type="button" data-act="ask">'+(it.thread.length?'Seguir preguntando':'Explícamelo')+'</button><button type="button" class="x" data-act="del">Quitar</button></div></div></details>';
+      });
+      h+='</div></section>';
+    });
+    if(!shown)h='<div class="mq-empty">Nada coincide con «'+esc(q)+'».</div>';
+    B.innerHTML=h;
+  }
+  $('#mq-q').addEventListener('input',renderMQ);
+  $('#mq-body').addEventListener('toggle',function(e){var d=e.target;if(d.dataset&&d.dataset.id)mqOpen[d.dataset.id]=d.open},true);
+  $('#mq-body').addEventListener('click',function(e){
+    var b=e.target.closest('button[data-act]');if(!b)return;
+    var id=b.closest('details.mq').dataset.id,it=items.find(function(i){return i.id===id});if(!it)return;
+    if(b.dataset.act==='del'){if(!confirm('¿Quitar esta pregunta y su respuesta?'))return;unwrap(id);items=items.filter(function(i){return i.id!==id});if(current&&current.id===id)current=null;dbDel(id);save();return}
+    if(b.dataset.act==='go'){openItem(id,false);return}
+    if(b.dataset.act==='ask'){current=it;openDrawer('exp');renderThread();if(!it.thread.length)ask(null);else setTimeout(function(){$('#more').focus()},50)}
+  });
+  renderMQ();paintStore();
+  (async function(){
+    try{
+      if(!(window.claude&&claude.use)){mqMode='local';paintStore();return}
+      var r=await Promise.all([claude.use('db'),claude.use('user')]),db=r[0],user=r[1];
+      var uid=user&&await user.id();
+      if(!db||!uid){mqMode='local';paintStore();return}
+      var col=db.collection('data/users/'+uid);
+      var snap=await Promise.race([col.get(),new Promise(function(_,rj){setTimeout(function(){rj({code:'timeout'})},10000)})]);
+      var remote={};snap.docs.forEach(function(d){var v=d.data();if(v&&v.id&&Array.isArray(v.thread))remote[v.id]=JSON.parse(JSON.stringify(v))});
+      var local={};items.forEach(function(i){local[i.id]=i});
+      Object.keys(remote).forEach(function(id){var rm=remote[id],l=local[id];
+        if(!l){items.push(rm);if(rm.kind==='hl')restore(rm)}
+        else if(rm.thread.length>l.thread.length)l.thread=rm.thread});
+      dbCol=col;mqMode='db';
+      items.forEach(function(i){var rm=remote[i.id];if(!rm||i.thread.length>rm.thread.length)dbPut(i)});
+      items.sort(function(a,b){return (b.ts||0)-(a.ts||0)});
+      save();paintStore();
+    }catch(e){mqMode='local';paintStore()}
+  })();
 
   /* ---------- barra de selección ---------- */
   var bar=$('#hl-bar'),lastRange=null,coarse=matchMedia('(pointer: coarse)').matches,selT;
@@ -4218,7 +4324,7 @@ Yepes, R. - Aranguren, J., Fundamentos de Antropología, Eunsa, Pamplona, 2003.<
     if(!marks.length){toast('No se puede subrayar ese texto.');return}
     var raw=marks.map(function(m){return m.textContent}).join('');
     var it={id:id,kind:'hl',t:temaOf(r.startContainer),label:label,raw:raw,pos:posOf(marks[0].firstChild),sec:sec,ctx:ctx,thread:[],ts:Date.now()};
-    items.unshift(it);save();
+    items.unshift(it);save(it);
     getSelection().removeAllRanges();hideBar();lastRange=null;
     if(explain){openItem(id,true)}else{toast('Subrayado guardado. Púlsalo cuando quieras para que te lo explique.')}
   }
@@ -4257,7 +4363,7 @@ Yepes, R. - Aranguren, J., Fundamentos de Antropología, Eunsa, Pamplona, 2003.<
       o.innerHTML='<span class="t"><span>'+esc(it.label.length>140?it.label.slice(0,140)+'…':it.label)+'</span></span><span class="m">'+esc(it.kind==='hl'?it.sec:'Consulta')+(it.thread.length?' · explicado':' · sin explicar')+'</span>';
       o.addEventListener('click',function(){openItem(it.id,false)});
       var x=document.createElement('button');x.type='button';x.className='x';x.textContent='Quitar';
-      x.addEventListener('click',function(){unwrap(it.id);items=items.filter(function(i){return i.id!==it.id});if(current&&current.id===it.id){current=null;$('#thread').innerHTML='<p class="empty">Selecciona una palabra o frase en la página y pulsa <b>Explícamelo</b>.</p>'}save();renderList()});
+      x.addEventListener('click',function(){unwrap(it.id);items=items.filter(function(i){return i.id!==it.id});if(current&&current.id===it.id){current=null;$('#thread').innerHTML='<p class="empty">Selecciona una palabra o frase en la página y pulsa <b>Explícamelo</b>.</p>'}dbDel(it.id);save();renderList()});
       row.appendChild(o);row.appendChild(x);L.appendChild(row);
     });
   }
@@ -4618,7 +4724,7 @@ Yepes, R. - Aranguren, J., Fundamentos de Antropología, Eunsa, Pamplona, 2003.<
     renderThread('');
     try{
       var res=await sample(turns,{signal:busy.signal,cache:followup?false:undefined,onText:function(u){renderThread(u.text)}});
-      it.thread.push({role:'assistant',content:res.text});save();renderThread();
+      it.thread.push({role:'assistant',content:res.text});save(it);renderThread();
     }catch(e){
       if(followup)it.thread.pop();
       renderThread();
@@ -4628,8 +4734,8 @@ Yepes, R. - Aranguren, J., Fundamentos de Antropología, Eunsa, Pamplona, 2003.<
   $('#more-form').addEventListener('submit',function(e){e.preventDefault();var v=$('#more').value.trim();if(!v)return;$('#more').value='';ask(v)});
   $('#lookup-form').addEventListener('submit',function(e){
     e.preventDefault();var v=$('#lookup').value.trim();if(!v)return;$('#lookup').value='';
-    var it={id:'q'+Date.now().toString(36),kind:'q',t:curT,label:v,raw:'',pos:-1,sec:'',ctx:'',thread:[],ts:Date.now()};
-    items.unshift(it);save();openItem(it.id,true);
+    var it={id:'q'+Date.now().toString(36),kind:'q',t:curT==5?1:curT,label:v,raw:'',pos:-1,sec:'',ctx:'',thread:[],ts:Date.now()};
+    items.unshift(it);save(it);openItem(it.id,true);
   });
 })();
 </script>
